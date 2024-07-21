@@ -1,11 +1,38 @@
 <#
 .SYNOPSIS
-    Connects to Microsoft Graph using EntraID certificate, reads Autopilot GrouTag infromation, change Computer name based on GroupTag information and specific rules.
+    Changes the computer name based on Group Tag information which gets from Autopilot Group Tags.
 
 .DESCRIPTION
-    This script locates the Intune client certificate in the local machine's certificate store,
-    authenticates to the Microsoft Graph API using the certificate, and retrieves the Group Tag information
-    for the device making the query.
+    Script verifies the computer name to make sure it complies with a predefined naming convention. To comply with naming convention, information is gathered from Microsoft Entra ID by consulting Autopilot Group Tag. It authenticates to the Microsoft Graph API using a certificate provided by Microsoft Entra ID.
+
+    For this process to work, the device must be registered in Windows Autopilot. Autopilot allows for the automatic provisioning and configuration of devices, ensuring they meet organizational standards from the outset. The script extracts relevant naming information from the Group Tag associated with the device's Entra ID.
+
+    The script also requires an existing Enterprise application registered in Azure AD, with the necessary API permissions in Microsoft Graph. These permissions include:
+    - Device.Read.All
+    - DeviceManagementManagedDevices.Read.All
+    - DeviceManagementManagedDevices.ReadWrite.All
+    - User.Read
+
+    The authentication is performed using certificates, specifically the "MS-Organization-Access certificate" provided by Microsoft Entra ID, it is specifically tied to device management scenarios managed through Intune.
+    This certificate is unique to each device and is automatically provisioned as part of the Entra Join process and Intune Enrollment. Using this certificate simplifies administration and enhances security, it uses Entra ID,
+    no need for additional certificate infrastrucutre, each device can authenticate independently and securely as long as it is Entra Joined.
+
+    Upon execution, the script performs the following steps:
+    1. Locates the EntraID/Intune client certificate in the local machine's certificate store.
+    2. Authenticates to the Microsoft Graph API using the certificate.
+    3. Retrieves the Group Tag information for the device.
+    4. Constructs a new computer name based on specific rules defined in the script.
+    5. Checks if the new name complies with the predefined naming convention.
+    6. If the current computer name differs from the new name, renames the computer and schedules a shutdown to complete the renaming process.
+    7. If the names are the same, no renaming is needed.
+
+    The use of the EntraID/Intune client certificate ensures that each device can securely access the necessary resources in Microsoft Graph, facilitating the retrieval and application of Group Tag information. 
+
+    Relevant sources and inspiration for this script include:
+    - OOF Hours Blog: https://oofhours.com/2023/10/26/renaming-autopilot-deployed-devices/
+    - Skotheimsvik Blog: https://skotheimsvik.no/rename-computers-with-countrycode-in-intune
+    - Microsoft Graph API Documentation: https://docs.microsoft.com/en-us/graph/overview
+    - PowerShell Microsoft Graph SDK Documentation: https://docs.microsoft.com/en-us/powershell/microsoftgraph/installation?view=graph-powershell-1.0
 
 .PARAMETER tenantId
     The tenant ID for the Azure AD tenant.
@@ -14,6 +41,8 @@
     The client ID for the Azure AD application.
 
 .SOURCES
+    - OOF Hours Blog: https://oofhours.com/2023/10/26/renaming-autopilot-deployed-devices/
+    - Skotheimsvik Blog: https://skotheimsvik.no/rename-computers-with-countrycode-in-intune
     - Microsoft Graph API Documentation: https://docs.microsoft.com/en-us/graph/overview
     - PowerShell Microsoft Graph SDK Documentation: https://docs.microsoft.com/en-us/powershell/microsoftgraph/installation?view=graph-powershell-1.0
 
