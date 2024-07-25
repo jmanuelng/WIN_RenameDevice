@@ -643,11 +643,12 @@ try {
     This part of the script is for a unique use case in a particular project. 
 
     For this specific project:
+    - the Asset ID is the last segment. Segments are divided by dash "-".
     - The building information is extracted from the 5th segment from the end.
-    - The department is extracted from the 4th segment from the end.
-    - The device type is extracted from the 2nd segment from the end.
+    - The department is the 4th segment from the end.
+    - The device type is the 2nd segment from the end.
 
-    These specific lines of code are likely to be different for others interested in using this code. Users should modify this 
+    These specific lines of code are likely to be different for others interested in using this script. Users should modify this 
     section according to their own requirements and the structure of their Group Tags or naming conventions. The new name 
     constructed here is an example of how to parse and use parts of a string to form a meaningful and specific computer name 
     for a particular environment. 
@@ -680,6 +681,7 @@ try {
     $typeIndex = -2
     $type = $segments[$typeIndex]
 
+    # shows the extracted information, mainly for verification and troubleshooting purposes
     Write-Host "Asset ID: $assetId"
     Write-Host "Building: $building"
     Write-Host "Department: $department"
@@ -693,7 +695,6 @@ try {
 }
 
 # Determine the new computer name based on the extracted information.
-# This is actually done in Rename-ComputerAndShutdown, repeated here just for the purpose of logging.
 $currentName = (Get-CimInstance -ClassName Win32_ComputerSystem).Name
 $newName = if ($building.Length -gt 3) { $building.Substring(0, 3) } else { $building }
 $newName += if ($department.Length -gt 3) { $department.Substring(0, 3) } else { $department }
@@ -706,6 +707,7 @@ if ($newName.Length -gt 15) {
 
 # =================================
 
+# Makes the name change.
 try {
     # Check if a rename is necessary and update the summary
     if ($currentName -eq $newName) {
@@ -722,6 +724,7 @@ try {
     WriteAndExitWithSummary -StatusCode $execStatus -Summary $execSummary
 }
 
+# Writes a summary of the execution and finishes. Very usefull when executing as a Remediation script.
 WriteAndExitWithSummary -StatusCode $execStatus -Summary $execSummary
 
 #Endregion
